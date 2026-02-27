@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Value Analysis - Bliro ICP Analysis</title>
+  <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #111827;
+  line-height: 1.6;
+}
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 240px;
+  background: #005047;
+  color: #fff;
+  flex-shrink: 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  z-index: 10;
+}
+.sidebar-brand {
+  padding: 24px 20px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-brand .eyebrow {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: rgba(255,255,255,0.5);
+}
+.sidebar-brand h2 {
+  font-size: 16px; font-weight: 700; margin: 6px 0 0; color: #fff;
+}
+.sidebar-brand .sub {
+  font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; padding-bottom: 16px;
+}
+.sidebar-nav { padding: 12px 0; }
+.sidebar-nav a {
+  display: block;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+.sidebar-nav a:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+.sidebar-nav a.active {
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+  border-left-color: #34d399;
+  font-weight: 600;
+}
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+}
+.sidebar-footer a {
+  font-size: 11px; color: rgba(255,255,255,0.5);
+  text-decoration: none;
+}
+.sidebar-footer a:hover { color: rgba(255,255,255,0.8); }
+
+.main {
+  margin-left: 240px;
+  flex: 1;
+  padding: 32px 40px;
+  max-width: 900px;
+}
+.page-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.page-header h1 {
+  font-size: 24px; font-weight: 700; color: #111827;
+}
+.page-header .sub {
+  font-size: 13px; color: #6b7280; margin-top: 4px;
+}
+
+/* Cards */
+.cards { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+.card {
+  flex: 1;
+  min-width: 140px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+.card .value { font-size: 28px; font-weight: 700; }
+.card .label {
+  font-size: 10px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;
+}
+.card.green .value { color: #005047; }
+.card.red .value { color: #D34053; }
+.card.rev .value { color: #219653; }
+
+/* Section */
+.section {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.section-header {
+  padding: 20px 24px 8px;
+}
+.section-header h2 {
+  font-size: 16px; font-weight: 700; color: #111827;
+}
+.section-header .sub {
+  font-size: 12px; color: #6b7280; margin-top: 2px;
+}
+.section-body { padding: 8px 24px 24px; }
+
+/* Tables */
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.data th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f9fafb;
+}
+table.data th.r { text-align: right; }
+table.data td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+table.data td.r {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+table.data td.bold { font-weight: 600; }
+table.data td.green { color: #219653; font-weight: 600; }
+table.data td.red { color: #D34053; font-weight: 600; }
+table.data td.blue { color: #1d4ed8; font-weight: 600; }
+table.data td.muted { color: #6b7280; }
+table.data td.name { font-weight: 600; color: #111827; }
+table.data td.name .domain { font-weight: 400; font-size: 11px; color: #6b7280; }
+table.data tr:last-child td { border-bottom: none; }
+table.data tr.footer-row td {
+  background: #f9fafb; font-size: 12px; color: #6b7280; padding: 10px 12px;
+}
+
+/* Bars */
+.bar-bg {
+  background: #e5e7eb; border-radius: 3px; height: 8px; overflow: hidden;
+}
+.bar-fill {
+  height: 8px; border-radius: 3px; min-width: 2px;
+}
+
+/* Stacked bar chart */
+.stacked-row { display: flex; align-items: center; margin-bottom: 14px; }
+.stacked-label { width: 80px; flex-shrink: 0; }
+.stacked-label .badge {
+  display: inline-block; padding: 3px 10px; border-radius: 12px;
+  font-size: 12px; font-weight: 700; color: #fff;
+}
+.stacked-label .count { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.stacked-bar {
+  flex: 1; display: flex; height: 32px; border-radius: 4px;
+  overflow: hidden; background: #f3f4f6;
+}
+.stacked-seg {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; color: #fff; min-width: 2px;
+}
+.stacked-seg.ws { color: #374151; }
+
+/* Legend */
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #374151; }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+/* ICP box */
+.icp-box {
+  border: 2px solid #005047; border-radius: 8px; overflow: hidden;
+}
+.icp-row {
+  padding: 12px 16px; border-bottom: 1px solid #e5e7eb;
+}
+.icp-row:last-child { border-bottom: none; }
+.icp-row .dim-label {
+  font-size: 11px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.icp-row .tags { margin-top: 6px; }
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 12px; font-weight: 600; color: #005047;
+  background: #ccfbf1; margin: 2px;
+}
+
+/* Methodology */
+.method-box {
+  background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;
+  overflow: hidden;
+}
+.method-step { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
+.method-step:last-child { border-bottom: none; }
+.method-step h3 {
+  font-size: 13px; font-weight: 700; color: #005047; margin-bottom: 6px;
+}
+.method-step p {
+  font-size: 12px; color: #374151; line-height: 1.7;
+}
+.formula {
+  display: inline-block; padding: 6px 12px; background: #fff;
+  border: 1px solid #d1d5db; border-radius: 4px;
+  font-family: monospace; font-size: 12px; color: #005047;
+  margin: 6px 0;
+}
+.weight-table {
+  width: 100%; border-collapse: collapse; margin-top: 8px;
+  border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden;
+}
+.weight-table th {
+  padding: 6px 12px; font-size: 11px; font-weight: 600;
+  color: #374151; background: #f3f4f6; text-align: left;
+}
+.weight-table td {
+  padding: 6px 12px; font-size: 12px; color: #374151;
+  border-top: 1px solid #f3f4f6;
+}
+.weight-table td.w {
+  text-align: center; font-weight: 600; color: #005047;
+}
+
+/* Tier badge */
+.tier-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+/* Status badge */
+.status-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600;
+}
+
+/* Rev cards */
+.rev-cards { display: flex; gap: 0; margin-bottom: 16px; border-radius: 6px; overflow: hidden; border: 1px solid #dcfce7; }
+.rev-card {
+  flex: 1; padding: 16px 8px; background: #f0fdf4; text-align: center;
+  border-right: 1px solid #dcfce7;
+}
+.rev-card:last-child { border-right: none; }
+.rev-card .value { font-size: 20px; font-weight: 700; color: #219653; }
+.rev-card .label { font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 16px; }
+  .cards { flex-direction: column; }
+  .rev-cards { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-brand">
+        <p class="eyebrow">Bliro / DataGen</p>
+        <h2>ICP Analysis</h2>
+        <p class="sub">2026-02-26 | German Mfg. TAM</p>
+      </div>
+      <div class="sidebar-nav">
+        <a href="index.html">Executive Summary</a>
+        <a href="win-rates.html">Win Rates</a>
+        <a href="tier-breakdown.html">Tier Breakdown</a>
+        <a href="customer-value.html" class="active">Customer Value</a>
+        <a href="target-list.html">Target List</a>
+      </div>
+      <div class="sidebar-footer">
+        <a href="https://datagen.dev">Generated by DataGen</a>
+      </div>
+    </nav>
+    <main class="main">
+      <div class="page-header">
+        <h1>Customer Value Analysis</h1>
+        <p class="sub">Revenue profiling from 131 won companies with ARR data</p>
+      </div>
+      <div class="rev-cards">
+        <div class="rev-card"><div class="value">&euro;3,000</div><div class="label">Median ARR</div></div>
+        <div class="rev-card"><div class="value">&euro;7,989</div><div class="label">Avg ARR</div></div>
+        <div class="rev-card"><div class="value">&euro;250</div><div class="label">Median MRR</div></div>
+        <div class="rev-card"><div class="value">12.0mo</div><div class="label">Median Duration</div></div>
+        <div class="rev-card"><div class="value">&euro;1,046,552</div><div class="label">Total ARR</div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-header"><h2>Expected ARR by Company Size</h2><p class="sub">Win rate x avg ARR -- where the highest-value opportunities are</p></div>
+        <div class="section-body">
+          <table class="data">
+            <thead><tr><th>Segment</th><th class="r">N</th><th class="r">Avg ARR</th><th class="r">Win Rate</th><th class="r" style="color:#219653;">Expected ARR</th><th class="r">Avg Rollout</th><th style="width:100px"></th></tr></thead>
+            <tbody>
+          <tr>
+            <td class="bold">5K+</td>
+            <td class="r muted">5</td>
+            <td class="r">&euro;36,560</td>
+            <td class="r" style="font-weight:600;color:#005047;">54.3%</td>
+            <td class="r" style="font-weight:700;color:#219653;">&euro;19,852</td>
+            <td class="r muted">&euro;220,000</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold"><50</td>
+            <td class="r muted">53</td>
+            <td class="r">&euro;11,264</td>
+            <td class="r" style="font-weight:600;color:#219653;">74.5%</td>
+            <td class="r" style="font-weight:700;color:#219653;">&euro;8,393</td>
+            <td class="r muted">&euro;83,536</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:42%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">1K-5K</td>
+            <td class="r muted">8</td>
+            <td class="r">&euro;6,703</td>
+            <td class="r" style="font-weight:600;color:#005047;">51.3%</td>
+            <td class="r" style="font-weight:700;color:#005047;">&euro;3,441</td>
+            <td class="r muted">&euro;42,500</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:17%;background:#005047;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">200-1K</td>
+            <td class="r muted">20</td>
+            <td class="r">&euro;6,961</td>
+            <td class="r" style="font-weight:600;color:#FFA70B;">46.8%</td>
+            <td class="r" style="font-weight:700;color:#005047;">&euro;3,256</td>
+            <td class="r muted">&euro;31,167</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:16%;background:#005047;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">50-200</td>
+            <td class="r muted">30</td>
+            <td class="r">&euro;4,970</td>
+            <td class="r" style="font-weight:600;color:#219653;">65.2%</td>
+            <td class="r" style="font-weight:700;color:#005047;">&euro;3,240</td>
+            <td class="r muted">&euro;22,692</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:16%;background:#005047;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Unknown</td>
+            <td class="r muted">35</td>
+            <td class="r">&euro;3,606</td>
+            <td class="r" style="font-weight:600;color:#005047;">57.6%</td>
+            <td class="r" style="font-weight:700;color:#D34053;">&euro;2,075</td>
+            <td class="r muted">&euro;49,106</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:10%;background:#D34053;"></div></div></td>
+          </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header"><h2>Expected ARR by Industry</h2><p class="sub">Chemical stands out dramatically on deal value</p></div>
+        <div class="section-body">
+          <table class="data">
+            <thead><tr><th>Segment</th><th class="r">N</th><th class="r">Avg ARR</th><th class="r">Win Rate</th><th class="r" style="color:#219653;">Expected ARR</th><th class="r">Avg Rollout</th><th style="width:100px"></th></tr></thead>
+            <tbody>
+          <tr>
+            <td class="bold">Chemical</td>
+            <td class="r muted">5</td>
+            <td class="r">&euro;60,922</td>
+            <td class="r" style="font-weight:600;color:#219653;">67.9%</td>
+            <td class="r" style="font-weight:700;color:#219653;">&euro;41,348</td>
+            <td class="r muted">&euro;140,000</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Machinery</td>
+            <td class="r muted">11</td>
+            <td class="r">&euro;8,468</td>
+            <td class="r" style="font-weight:600;color:#005047;">52.7%</td>
+            <td class="r" style="font-weight:700;color:#D34053;">&euro;4,462</td>
+            <td class="r muted">&euro;264,272</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:10%;background:#D34053;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Automotive</td>
+            <td class="r muted">1</td>
+            <td class="r">&euro;9,600</td>
+            <td class="r" style="font-weight:600;color:#FFA70B;">45.7%</td>
+            <td class="r" style="font-weight:700;color:#D34053;">&euro;4,390</td>
+            <td class="r muted">&euro;35,280</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:10%;background:#D34053;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Other</td>
+            <td class="r muted">119</td>
+            <td class="r">&euro;6,309</td>
+            <td class="r" style="font-weight:600;color:#219653;">65.0%</td>
+            <td class="r" style="font-weight:700;color:#D34053;">&euro;4,101</td>
+            <td class="r muted">&euro;46,604</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:9%;background:#D34053;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Electronics</td>
+            <td class="r muted">13</td>
+            <td class="r">&euro;5,299</td>
+            <td class="r" style="font-weight:600;color:#005047;">53.9%</td>
+            <td class="r" style="font-weight:700;color:#D34053;">&euro;2,856</td>
+            <td class="r muted">&euro;44,250</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:6%;background:#D34053;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Food/Consumer</td>
+            <td class="r muted">2</td>
+            <td class="r">&euro;3,552</td>
+            <td class="r" style="font-weight:600;color:#FFA70B;">49.1%</td>
+            <td class="r" style="font-weight:700;color:#D34053;">&euro;1,745</td>
+            <td class="r muted">-</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:4%;background:#D34053;"></div></div></td>
+          </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header"><h2>Expected ARR by Geography</h2><p class="sub">Germany dominates on volume and expected value</p></div>
+        <div class="section-body">
+          <table class="data">
+            <thead><tr><th>Segment</th><th class="r">N</th><th class="r">Avg ARR</th><th class="r">Win Rate</th><th class="r" style="color:#219653;">Expected ARR</th><th class="r">Avg Rollout</th><th style="width:100px"></th></tr></thead>
+            <tbody>
+          <tr>
+            <td class="bold">Germany</td>
+            <td class="r muted">115</td>
+            <td class="r">&euro;8,082</td>
+            <td class="r" style="font-weight:600;color:#219653;">67.3%</td>
+            <td class="r" style="font-weight:700;color:#219653;">&euro;5,442</td>
+            <td class="r muted">&euro;63,511</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Rest</td>
+            <td class="r muted">29</td>
+            <td class="r">&euro;8,632</td>
+            <td class="r" style="font-weight:600;color:#FFA70B;">46.5%</td>
+            <td class="r" style="font-weight:700;color:#219653;">&euro;4,012</td>
+            <td class="r muted">&euro;104,167</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:73%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">DACH other</td>
+            <td class="r muted">7</td>
+            <td class="r">&euro;3,760</td>
+            <td class="r" style="font-weight:600;color:#005047;">59.3%</td>
+            <td class="r" style="font-weight:700;color:#219653;">&euro;2,230</td>
+            <td class="r muted">&euro;34,002</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:40%;background:#219653;"></div></div></td>
+          </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section"><div class="section-header"><h2>Top Customers by ARR</h2><p class="sub">Highest-value won customers -- defines the ARR ceiling per segment</p></div><div class="section-body">
+        <table class="data"><thead><tr><th>Company</th><th>Size</th><th>Industry</th><th class="r">ARR</th><th class="r">MRR</th><th class="r">Rollout</th><th class="r">Duration</th></tr></thead><tbody>
+          <tr><td class="name">THESEO Deutschland GmbH</td><td class="muted" style="font-size:11px;"><50</td><td class="muted" style="font-size:11px;">Chemical</td><td class="r green">&euro;234,000</td><td class="r">&euro;19,500</td><td class="r">&euro;250,000</td><td class="r muted">12mo</td></tr>
+          <tr><td class="name">CHG-MERIDIAN</td><td class="muted" style="font-size:11px;"><50</td><td class="muted" style="font-size:11px;">Other</td><td class="r green">&euro;118,710</td><td class="r">&euro;9,892</td><td class="r">&euro;400,000</td><td class="r muted">12mo</td></tr>
+          <tr><td class="name">Telefónica</td><td class="muted" style="font-size:11px;">5K+</td><td class="muted" style="font-size:11px;">Other</td><td class="r green">&euro;88,200</td><td class="r">&euro;7,350</td><td class="r">-</td><td class="r muted">5mo</td></tr>
+          <tr><td class="name">MTR-Rechtsanwaltsgesellschaft mbH</td><td class="muted" style="font-size:11px;"><50</td><td class="muted" style="font-size:11px;">Other</td><td class="r green">&euro;43,254</td><td class="r">&euro;3,604</td><td class="r">&euro;45,000</td><td class="r muted">12mo</td></tr>
+          <tr><td class="name">Richmond Pharmacology</td><td class="muted" style="font-size:11px;">50-200</td><td class="muted" style="font-size:11px;">Other</td><td class="r green">&euro;29,904</td><td class="r">&euro;2,492</td><td class="r">&euro;60,000</td><td class="r muted">12mo</td></tr>
+          <tr><td class="name">WashTec AG</td><td class="muted" style="font-size:11px;">200-1K</td><td class="muted" style="font-size:11px;">Machinery</td><td class="r green">&euro;22,740</td><td class="r">&euro;1,895</td><td class="r">-</td><td class="r muted">4mo</td></tr>
+          <tr><td class="name">Getsafe</td><td class="muted" style="font-size:11px;">200-1K</td><td class="muted" style="font-size:11px;">Other</td><td class="r green">&euro;21,600</td><td class="r">&euro;21,600</td><td class="r">-</td><td class="r muted">12mo</td></tr>
+          <tr><td class="name">AXA</td><td class="muted" style="font-size:11px;">5K+</td><td class="muted" style="font-size:11px;">Other</td><td class="r green">&euro;16,020</td><td class="r">&euro;1,335</td><td class="r">&euro;100,000</td><td class="r muted">12mo</td></tr>
+          <tr><td class="name">ATOSS SOFTWARE</td><td class="muted" style="font-size:11px;">1K-5K</td><td class="muted" style="font-size:11px;">Machinery</td><td class="r green">&euro;14,418</td><td class="r">&euro;1,202</td><td class="r">-</td><td class="r muted">12mo</td></tr>
+          <tr><td class="name">BEGA</td><td class="muted" style="font-size:11px;">200-1K</td><td class="muted" style="font-size:11px;">Electronics</td><td class="r green">&euro;14,400</td><td class="r">&euro;1,200</td><td class="r">&euro;72,000</td><td class="r muted">12mo</td></tr>
+          <tr><td class="name">Zenjob</td><td class="muted" style="font-size:11px;">1K-5K</td><td class="muted" style="font-size:11px;">Other</td><td class="r green">&euro;12,816</td><td class="r">&euro;1,068</td><td class="r">&euro;35,000</td><td class="r muted">12mo</td></tr>
+          <tr><td class="name">KLAR Partners Ltd.</td><td class="muted" style="font-size:11px;"><50</td><td class="muted" style="font-size:11px;">Other</td><td class="r green">&euro;11,172</td><td class="r">&euro;931</td><td class="r">&euro;10,000</td><td class="r muted">12mo</td></tr>
+          <tr><td class="name">WattFox</td><td class="muted" style="font-size:11px;">50-200</td><td class="muted" style="font-size:11px;">Other</td><td class="r green">&euro;10,680</td><td class="r">&euro;890</td><td class="r">&euro;54,000</td><td class="r muted">12mo</td></tr>
+          <tr><td class="name">Telcat</td><td class="muted" style="font-size:11px;">200-1K</td><td class="muted" style="font-size:11px;">Other</td><td class="r green">&euro;10,200</td><td class="r">&euro;850</td><td class="r">&euro;25,000</td><td class="r muted">3mo</td></tr>
+          <tr><td class="name">CarOnSale</td><td class="muted" style="font-size:11px;">50-200</td><td class="muted" style="font-size:11px;">Automotive</td><td class="r green">&euro;9,600</td><td class="r">&euro;800</td><td class="r">&euro;35,280</td><td class="r muted">12mo</td></tr>
+        </tbody></table>
+      </div></div>
+
+      <div class="section"><div class="section-header"><h2>Revenue Methodology</h2></div><div class="section-body"><div class="method-box">
+        <div class="method-step">
+          <p><strong>Data source</strong>: HubSpot deal properties -- hs_mrr, hs_arr, hs_acv, hs_tcv, duration_in_months, rollout_potential__in_eur_arr_ -- from 175 Closed Won deals mapped to 151 companies.</p>
+        </div>
+        <div class="method-step">
+          <p><strong>Aggregation</strong>: Per company, MRR/ARR = max across deals (current run rate), TCV = sum (total contracted), rollout = max (expansion potential).</p>
+        </div>
+        <div class="method-step">
+          <p><strong>Expected ARR</strong> = adjusted_win_rate x avg_ARR_in_segment. This represents the revenue-weighted probability of winning a deal in each segment -- combining "how often we win" with "how much we win."</p>
+        </div>
+        <div class="method-step">
+          <p><strong>Best ARR targets</strong>: Segments with the highest expected ARR should be prioritized for outbound. A segment with moderate win rate but high ARR (e.g., 5K+ headcount) may be more valuable than one with high win rate but low ARR.</p>
+        </div>
+      </div></div></div>
+
+    </main>
+  </div>
+</body>
+</html>

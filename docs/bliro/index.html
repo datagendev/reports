@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Summary - Bliro ICP Analysis</title>
+  <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #111827;
+  line-height: 1.6;
+}
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 240px;
+  background: #005047;
+  color: #fff;
+  flex-shrink: 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  z-index: 10;
+}
+.sidebar-brand {
+  padding: 24px 20px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-brand .eyebrow {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: rgba(255,255,255,0.5);
+}
+.sidebar-brand h2 {
+  font-size: 16px; font-weight: 700; margin: 6px 0 0; color: #fff;
+}
+.sidebar-brand .sub {
+  font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; padding-bottom: 16px;
+}
+.sidebar-nav { padding: 12px 0; }
+.sidebar-nav a {
+  display: block;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+.sidebar-nav a:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+.sidebar-nav a.active {
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+  border-left-color: #34d399;
+  font-weight: 600;
+}
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+}
+.sidebar-footer a {
+  font-size: 11px; color: rgba(255,255,255,0.5);
+  text-decoration: none;
+}
+.sidebar-footer a:hover { color: rgba(255,255,255,0.8); }
+
+.main {
+  margin-left: 240px;
+  flex: 1;
+  padding: 32px 40px;
+  max-width: 900px;
+}
+.page-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.page-header h1 {
+  font-size: 24px; font-weight: 700; color: #111827;
+}
+.page-header .sub {
+  font-size: 13px; color: #6b7280; margin-top: 4px;
+}
+
+/* Cards */
+.cards { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+.card {
+  flex: 1;
+  min-width: 140px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+.card .value { font-size: 28px; font-weight: 700; }
+.card .label {
+  font-size: 10px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;
+}
+.card.green .value { color: #005047; }
+.card.red .value { color: #D34053; }
+.card.rev .value { color: #219653; }
+
+/* Section */
+.section {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.section-header {
+  padding: 20px 24px 8px;
+}
+.section-header h2 {
+  font-size: 16px; font-weight: 700; color: #111827;
+}
+.section-header .sub {
+  font-size: 12px; color: #6b7280; margin-top: 2px;
+}
+.section-body { padding: 8px 24px 24px; }
+
+/* Tables */
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.data th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f9fafb;
+}
+table.data th.r { text-align: right; }
+table.data td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+table.data td.r {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+table.data td.bold { font-weight: 600; }
+table.data td.green { color: #219653; font-weight: 600; }
+table.data td.red { color: #D34053; font-weight: 600; }
+table.data td.blue { color: #1d4ed8; font-weight: 600; }
+table.data td.muted { color: #6b7280; }
+table.data td.name { font-weight: 600; color: #111827; }
+table.data td.name .domain { font-weight: 400; font-size: 11px; color: #6b7280; }
+table.data tr:last-child td { border-bottom: none; }
+table.data tr.footer-row td {
+  background: #f9fafb; font-size: 12px; color: #6b7280; padding: 10px 12px;
+}
+
+/* Bars */
+.bar-bg {
+  background: #e5e7eb; border-radius: 3px; height: 8px; overflow: hidden;
+}
+.bar-fill {
+  height: 8px; border-radius: 3px; min-width: 2px;
+}
+
+/* Stacked bar chart */
+.stacked-row { display: flex; align-items: center; margin-bottom: 14px; }
+.stacked-label { width: 80px; flex-shrink: 0; }
+.stacked-label .badge {
+  display: inline-block; padding: 3px 10px; border-radius: 12px;
+  font-size: 12px; font-weight: 700; color: #fff;
+}
+.stacked-label .count { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.stacked-bar {
+  flex: 1; display: flex; height: 32px; border-radius: 4px;
+  overflow: hidden; background: #f3f4f6;
+}
+.stacked-seg {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; color: #fff; min-width: 2px;
+}
+.stacked-seg.ws { color: #374151; }
+
+/* Legend */
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #374151; }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+/* ICP box */
+.icp-box {
+  border: 2px solid #005047; border-radius: 8px; overflow: hidden;
+}
+.icp-row {
+  padding: 12px 16px; border-bottom: 1px solid #e5e7eb;
+}
+.icp-row:last-child { border-bottom: none; }
+.icp-row .dim-label {
+  font-size: 11px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.icp-row .tags { margin-top: 6px; }
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 12px; font-weight: 600; color: #005047;
+  background: #ccfbf1; margin: 2px;
+}
+
+/* Methodology */
+.method-box {
+  background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;
+  overflow: hidden;
+}
+.method-step { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
+.method-step:last-child { border-bottom: none; }
+.method-step h3 {
+  font-size: 13px; font-weight: 700; color: #005047; margin-bottom: 6px;
+}
+.method-step p {
+  font-size: 12px; color: #374151; line-height: 1.7;
+}
+.formula {
+  display: inline-block; padding: 6px 12px; background: #fff;
+  border: 1px solid #d1d5db; border-radius: 4px;
+  font-family: monospace; font-size: 12px; color: #005047;
+  margin: 6px 0;
+}
+.weight-table {
+  width: 100%; border-collapse: collapse; margin-top: 8px;
+  border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden;
+}
+.weight-table th {
+  padding: 6px 12px; font-size: 11px; font-weight: 600;
+  color: #374151; background: #f3f4f6; text-align: left;
+}
+.weight-table td {
+  padding: 6px 12px; font-size: 12px; color: #374151;
+  border-top: 1px solid #f3f4f6;
+}
+.weight-table td.w {
+  text-align: center; font-weight: 600; color: #005047;
+}
+
+/* Tier badge */
+.tier-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+/* Status badge */
+.status-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600;
+}
+
+/* Rev cards */
+.rev-cards { display: flex; gap: 0; margin-bottom: 16px; border-radius: 6px; overflow: hidden; border: 1px solid #dcfce7; }
+.rev-card {
+  flex: 1; padding: 16px 8px; background: #f0fdf4; text-align: center;
+  border-right: 1px solid #dcfce7;
+}
+.rev-card:last-child { border-right: none; }
+.rev-card .value { font-size: 20px; font-weight: 700; color: #219653; }
+.rev-card .label { font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 16px; }
+  .cards { flex-direction: column; }
+  .rev-cards { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-brand">
+        <p class="eyebrow">Bliro / DataGen</p>
+        <h2>ICP Analysis</h2>
+        <p class="sub">2026-02-26 | German Mfg. TAM</p>
+      </div>
+      <div class="sidebar-nav">
+        <a href="index.html" class="active">Executive Summary</a>
+        <a href="win-rates.html">Win Rates</a>
+        <a href="tier-breakdown.html">Tier Breakdown</a>
+        <a href="customer-value.html">Customer Value</a>
+        <a href="target-list.html">Target List</a>
+      </div>
+      <div class="sidebar-footer">
+        <a href="https://datagen.dev">Generated by DataGen</a>
+      </div>
+    </nav>
+    <main class="main">
+      <div class="page-header">
+        <h1>Executive Summary</h1>
+        <p class="sub">49,826 German Manufacturing TAM | 175 won + 128 lost deals</p>
+      </div>
+      <div class="cards">
+        <div class="card green"><div class="value">21,277</div><div class="label">Tier 1 (Core ICP)</div></div>
+        <div class="card red"><div class="value">20,748</div><div class="label">Tier 1 Whitespace</div></div>
+        <div class="card green"><div class="value">49,826</div><div class="label">Total TAM</div></div>
+        <div class="card green"><div class="value">6.7%</div><div class="label">HubSpot Coverage</div></div>
+      </div>
+      <div class="section"><div class="section-header"><h2>ICP Definition</h2><p class="sub">Best-performing segments with Bayesian-adjusted win rates</p></div><div class="section-body"><div class="icp-box">
+        <div class="icp-row"><div class="dim-label">Company Size</div><div class="tags"><span class="tag"><50 (75%)</span><span class="tag">50-200 (65%)</span><span class="tag">5K+ (54%)</span></div></div>
+        <div class="icp-row"><div class="dim-label">Industry</div><div class="tags"><span class="tag">Chemical (68%)</span><span class="tag">Other (65%)</span><span class="tag">Electronics (54%)</span></div></div>
+        <div class="icp-row"><div class="dim-label">Revenue</div><div class="tags"><span class="tag">1M-10M (64%)</span><span class="tag">10M-100M (63%)</span><span class="tag">>1B (47%)</span></div></div>
+        <div class="icp-row"><div class="dim-label">Geography</div><div class="tags"><span class="tag">Germany (67%)</span><span class="tag">DACH other (59%)</span><span class="tag">Rest (46%)</span></div></div>
+      </div></div></div>
+
+      <div class="section"><div class="section-header"><h2>Negative Signals</h2><p class="sub">Segments with below-50% win rate -- deprioritize in outbound</p></div><div class="section-body">
+        <table class="data"><thead><tr><th>Dimension</th><th>Segment</th><th class="r">Win Rate</th><th class="r">N</th></tr></thead><tbody>
+          <tr><td>Company Size</td><td class="bold">200-1K</td><td class="r red">46.8%</td><td class="r muted">41</td></tr>
+          <tr><td>Industry</td><td class="bold">Automotive</td><td class="r red">45.7%</td><td class="r muted">5</td></tr>
+          <tr><td>Industry</td><td class="bold">Food/Consumer</td><td class="r red">49.1%</td><td class="r muted">6</td></tr>
+          <tr><td>Revenue</td><td class="bold">>1B</td><td class="r red">47.2%</td><td class="r muted">13</td></tr>
+          <tr><td>Geography</td><td class="bold">Rest</td><td class="r red">46.5%</td><td class="r muted">65</td></tr>
+        </tbody></table>
+      </div></div>
+
+      <div class="cards">
+        <div class="card rev"><div class="value">&euro;1,046,552</div><div class="label">Total ARR</div></div>
+        <div class="card rev"><div class="value">&euro;3,000</div><div class="label">Median ARR</div></div>
+        <div class="card rev"><div class="value">&euro;7,989</div><div class="label">Avg ARR</div></div>
+        <div class="card rev"><div class="value">&euro;4,283,627</div><div class="label">Total Rollout Potential</div></div>
+      </div>
+      <div class="section"><div class="section-header"><h2>Scoring Methodology</h2><p class="sub">How each company's ICP score is calculated</p></div><div class="section-body"><div class="method-box">
+        <div class="method-step">
+          <h3>1. Data Source</h3>
+          <p>175 Closed Won deals and 128 Closed Lost deals from HubSpot Main pipeline, mapped to 151 won companies and 94 lost companies. Company firmographics sourced from Speaker (preferred) with HubSpot as fallback. 2 companies appearing in both won and lost were deduplicated by highest deal value.</p>
+        </div>
+        <div class="method-step">
+          <h3>2. Bayesian-Adjusted Win Rates</h3>
+          <p>Each company is classified into segments across 4 dimensions. Raw win rate = won / (won + lost). To prevent overfitting on small segments, <strong>Bayesian shrinkage</strong> is applied:</p>
+          <div class="formula">adjusted_rate = (won + 10 &times; 0.586) / (total + 10)</div>
+          <p style="color:#6b7280;">0.586 = overall base win rate. 10 = prior strength (pseudo-observations). Small-sample segments are pulled toward the average.</p>
+        </div>
+        <div class="method-step">
+          <h3>3. ICP Score (0-100)</h3>
+          <div class="formula">score = &Sigma; (normalized_rate &times; weight)</div>
+          <p><strong>Normalization</strong>: Min-max within each dimension -- best segment scores 1.0, worst scores 0.0.</p>
+          <table class="weight-table">
+            <tr><th>Dimension</th><th style="text-align:center">Weight</th><th>Note</th></tr>
+            <tr><td>Headcount</td><td class="w">35</td><td>&lt;50, 50-200, 200-1K, 1K-5K, 5K+</td></tr>
+            <tr><td>Industry</td><td class="w">35</td><td>Automotive, Machinery, Chemical, Electronics, Food/Consumer, Other</td></tr>
+            <tr><td>Revenue</td><td class="w">20</td><td>If missing, weight redistributed to Headcount + Industry</td></tr>
+            <tr><td>Country</td><td class="w">10</td><td>Germany, DACH other, Rest</td></tr>
+          </table>
+        </div>
+        <div class="method-step">
+          <h3>4. Tier Classification</h3>
+          <table class="weight-table">
+            <tr><th>Tier</th><th style="text-align:center">Score Range</th><th>Action</th></tr>
+            <tr><td>Tier 1</td><td class="w">75-100</td><td>Core ICP -- prioritize for outbound</td></tr>
+            <tr><td>Tier 2</td><td class="w">50-74</td><td>Good Fit -- secondary targets</td></tr>
+            <tr><td>Tier 3</td><td class="w">25-49</td><td>Marginal -- inbound only</td></tr>
+            <tr><td>Tier 4</td><td class="w">0-24</td><td>Poor Fit -- deprioritize</td></tr>
+          </table>
+        </div>
+      </div></div></div>
+
+    </main>
+  </div>
+</body>
+</html>

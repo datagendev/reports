@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Win Rate Analysis - Bliro ICP Analysis</title>
+  <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #111827;
+  line-height: 1.6;
+}
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 240px;
+  background: #005047;
+  color: #fff;
+  flex-shrink: 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  z-index: 10;
+}
+.sidebar-brand {
+  padding: 24px 20px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-brand .eyebrow {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: rgba(255,255,255,0.5);
+}
+.sidebar-brand h2 {
+  font-size: 16px; font-weight: 700; margin: 6px 0 0; color: #fff;
+}
+.sidebar-brand .sub {
+  font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; padding-bottom: 16px;
+}
+.sidebar-nav { padding: 12px 0; }
+.sidebar-nav a {
+  display: block;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+.sidebar-nav a:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+.sidebar-nav a.active {
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+  border-left-color: #34d399;
+  font-weight: 600;
+}
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+}
+.sidebar-footer a {
+  font-size: 11px; color: rgba(255,255,255,0.5);
+  text-decoration: none;
+}
+.sidebar-footer a:hover { color: rgba(255,255,255,0.8); }
+
+.main {
+  margin-left: 240px;
+  flex: 1;
+  padding: 32px 40px;
+  max-width: 900px;
+}
+.page-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.page-header h1 {
+  font-size: 24px; font-weight: 700; color: #111827;
+}
+.page-header .sub {
+  font-size: 13px; color: #6b7280; margin-top: 4px;
+}
+
+/* Cards */
+.cards { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+.card {
+  flex: 1;
+  min-width: 140px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+.card .value { font-size: 28px; font-weight: 700; }
+.card .label {
+  font-size: 10px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;
+}
+.card.green .value { color: #005047; }
+.card.red .value { color: #D34053; }
+.card.rev .value { color: #219653; }
+
+/* Section */
+.section {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.section-header {
+  padding: 20px 24px 8px;
+}
+.section-header h2 {
+  font-size: 16px; font-weight: 700; color: #111827;
+}
+.section-header .sub {
+  font-size: 12px; color: #6b7280; margin-top: 2px;
+}
+.section-body { padding: 8px 24px 24px; }
+
+/* Tables */
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.data th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f9fafb;
+}
+table.data th.r { text-align: right; }
+table.data td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+table.data td.r {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+table.data td.bold { font-weight: 600; }
+table.data td.green { color: #219653; font-weight: 600; }
+table.data td.red { color: #D34053; font-weight: 600; }
+table.data td.blue { color: #1d4ed8; font-weight: 600; }
+table.data td.muted { color: #6b7280; }
+table.data td.name { font-weight: 600; color: #111827; }
+table.data td.name .domain { font-weight: 400; font-size: 11px; color: #6b7280; }
+table.data tr:last-child td { border-bottom: none; }
+table.data tr.footer-row td {
+  background: #f9fafb; font-size: 12px; color: #6b7280; padding: 10px 12px;
+}
+
+/* Bars */
+.bar-bg {
+  background: #e5e7eb; border-radius: 3px; height: 8px; overflow: hidden;
+}
+.bar-fill {
+  height: 8px; border-radius: 3px; min-width: 2px;
+}
+
+/* Stacked bar chart */
+.stacked-row { display: flex; align-items: center; margin-bottom: 14px; }
+.stacked-label { width: 80px; flex-shrink: 0; }
+.stacked-label .badge {
+  display: inline-block; padding: 3px 10px; border-radius: 12px;
+  font-size: 12px; font-weight: 700; color: #fff;
+}
+.stacked-label .count { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.stacked-bar {
+  flex: 1; display: flex; height: 32px; border-radius: 4px;
+  overflow: hidden; background: #f3f4f6;
+}
+.stacked-seg {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; color: #fff; min-width: 2px;
+}
+.stacked-seg.ws { color: #374151; }
+
+/* Legend */
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #374151; }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+/* ICP box */
+.icp-box {
+  border: 2px solid #005047; border-radius: 8px; overflow: hidden;
+}
+.icp-row {
+  padding: 12px 16px; border-bottom: 1px solid #e5e7eb;
+}
+.icp-row:last-child { border-bottom: none; }
+.icp-row .dim-label {
+  font-size: 11px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.icp-row .tags { margin-top: 6px; }
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 12px; font-weight: 600; color: #005047;
+  background: #ccfbf1; margin: 2px;
+}
+
+/* Methodology */
+.method-box {
+  background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;
+  overflow: hidden;
+}
+.method-step { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
+.method-step:last-child { border-bottom: none; }
+.method-step h3 {
+  font-size: 13px; font-weight: 700; color: #005047; margin-bottom: 6px;
+}
+.method-step p {
+  font-size: 12px; color: #374151; line-height: 1.7;
+}
+.formula {
+  display: inline-block; padding: 6px 12px; background: #fff;
+  border: 1px solid #d1d5db; border-radius: 4px;
+  font-family: monospace; font-size: 12px; color: #005047;
+  margin: 6px 0;
+}
+.weight-table {
+  width: 100%; border-collapse: collapse; margin-top: 8px;
+  border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden;
+}
+.weight-table th {
+  padding: 6px 12px; font-size: 11px; font-weight: 600;
+  color: #374151; background: #f3f4f6; text-align: left;
+}
+.weight-table td {
+  padding: 6px 12px; font-size: 12px; color: #374151;
+  border-top: 1px solid #f3f4f6;
+}
+.weight-table td.w {
+  text-align: center; font-weight: 600; color: #005047;
+}
+
+/* Tier badge */
+.tier-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+/* Status badge */
+.status-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600;
+}
+
+/* Rev cards */
+.rev-cards { display: flex; gap: 0; margin-bottom: 16px; border-radius: 6px; overflow: hidden; border: 1px solid #dcfce7; }
+.rev-card {
+  flex: 1; padding: 16px 8px; background: #f0fdf4; text-align: center;
+  border-right: 1px solid #dcfce7;
+}
+.rev-card:last-child { border-right: none; }
+.rev-card .value { font-size: 20px; font-weight: 700; color: #219653; }
+.rev-card .label { font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 16px; }
+  .cards { flex-direction: column; }
+  .rev-cards { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-brand">
+        <p class="eyebrow">Bliro / DataGen</p>
+        <h2>ICP Analysis</h2>
+        <p class="sub">2026-02-26 | German Mfg. TAM</p>
+      </div>
+      <div class="sidebar-nav">
+        <a href="index.html">Executive Summary</a>
+        <a href="win-rates.html" class="active">Win Rates</a>
+        <a href="tier-breakdown.html">Tier Breakdown</a>
+        <a href="customer-value.html">Customer Value</a>
+        <a href="target-list.html">Target List</a>
+      </div>
+      <div class="sidebar-footer">
+        <a href="https://datagen.dev">Generated by DataGen</a>
+      </div>
+    </nav>
+    <main class="main">
+      <div class="page-header">
+        <h1>Win Rate Analysis</h1>
+        <p class="sub">Bayesian-adjusted win rates across 4 firmographic dimensions</p>
+      </div>
+      <div class="section">
+        <div class="section-header"><h2>Win Rate by Company Size</h2></div>
+        <div class="section-body">
+          <table class="data">
+            <thead><tr><th>Segment</th><th class="r">Won</th><th class="r">Lost</th><th class="r">Total</th><th class="r">Adj. Win Rate</th><th style="width:120px"></th></tr></thead>
+            <tbody>
+          <tr>
+            <td class="bold"><50</td>
+            <td class="r">53</td>
+            <td class="r">16</td>
+            <td class="r">69</td>
+            <td class="r" style="font-weight:700;color:#219653;">74.5%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:74%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">50-200</td>
+            <td class="r">30</td>
+            <td class="r">15</td>
+            <td class="r">45</td>
+            <td class="r" style="font-weight:700;color:#219653;">65.2%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:65%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Unknown</td>
+            <td class="r">35</td>
+            <td class="r">26</td>
+            <td class="r">61</td>
+            <td class="r" style="font-weight:700;color:#005047;">57.6%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:57%;background:#005047;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">5K+</td>
+            <td class="r">5</td>
+            <td class="r">5</td>
+            <td class="r">10</td>
+            <td class="r" style="font-weight:700;color:#005047;">54.3%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:54%;background:#005047;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">1K-5K</td>
+            <td class="r">8</td>
+            <td class="r">9</td>
+            <td class="r">17</td>
+            <td class="r" style="font-weight:700;color:#005047;">51.3%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:51%;background:#005047;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">200-1K</td>
+            <td class="r">18</td>
+            <td class="r">23</td>
+            <td class="r">41</td>
+            <td class="r" style="font-weight:700;color:#FFA70B;">46.8%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:46%;background:#FFA70B;"></div></div></td>
+          </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header"><h2>Win Rate by Industry</h2></div>
+        <div class="section-body">
+          <table class="data">
+            <thead><tr><th>Segment</th><th class="r">Won</th><th class="r">Lost</th><th class="r">Total</th><th class="r">Adj. Win Rate</th><th style="width:120px"></th></tr></thead>
+            <tbody>
+          <tr>
+            <td class="bold">Chemical</td>
+            <td class="r">5</td>
+            <td class="r">1</td>
+            <td class="r">6</td>
+            <td class="r" style="font-weight:700;color:#219653;">67.9%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:67%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Other</td>
+            <td class="r">117</td>
+            <td class="r">62</td>
+            <td class="r">179</td>
+            <td class="r" style="font-weight:700;color:#219653;">65.0%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:65%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Electronics</td>
+            <td class="r">13</td>
+            <td class="r">12</td>
+            <td class="r">25</td>
+            <td class="r" style="font-weight:700;color:#005047;">53.9%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:53%;background:#005047;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Machinery</td>
+            <td class="r">11</td>
+            <td class="r">11</td>
+            <td class="r">22</td>
+            <td class="r" style="font-weight:700;color:#005047;">52.7%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:52%;background:#005047;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Food/Consumer</td>
+            <td class="r">2</td>
+            <td class="r">4</td>
+            <td class="r">6</td>
+            <td class="r" style="font-weight:700;color:#FFA70B;">49.1%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:49%;background:#FFA70B;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Automotive</td>
+            <td class="r">1</td>
+            <td class="r">4</td>
+            <td class="r">5</td>
+            <td class="r" style="font-weight:700;color:#FFA70B;">45.7%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:45%;background:#FFA70B;"></div></div></td>
+          </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header"><h2>Win Rate by Revenue</h2></div>
+        <div class="section-body">
+          <table class="data">
+            <thead><tr><th>Segment</th><th class="r">Won</th><th class="r">Lost</th><th class="r">Total</th><th class="r">Adj. Win Rate</th><th style="width:120px"></th></tr></thead>
+            <tbody>
+          <tr>
+            <td class="bold">1M-10M</td>
+            <td class="r">5</td>
+            <td class="r">2</td>
+            <td class="r">7</td>
+            <td class="r" style="font-weight:700;color:#219653;">63.9%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:63%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">10M-100M</td>
+            <td class="r">8</td>
+            <td class="r">4</td>
+            <td class="r">12</td>
+            <td class="r" style="font-weight:700;color:#219653;">63.0%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:63%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Unknown</td>
+            <td class="r">131</td>
+            <td class="r">79</td>
+            <td class="r">210</td>
+            <td class="r" style="font-weight:700;color:#219653;">62.2%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:62%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">100M-1B</td>
+            <td class="r">0</td>
+            <td class="r">1</td>
+            <td class="r">1</td>
+            <td class="r" style="font-weight:700;color:#005047;">53.3%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:53%;background:#005047;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">>1B</td>
+            <td class="r">5</td>
+            <td class="r">8</td>
+            <td class="r">13</td>
+            <td class="r" style="font-weight:700;color:#FFA70B;">47.2%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:47%;background:#FFA70B;"></div></div></td>
+          </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-header"><h2>Win Rate by Geography</h2></div>
+        <div class="section-body">
+          <table class="data">
+            <thead><tr><th>Segment</th><th class="r">Won</th><th class="r">Lost</th><th class="r">Total</th><th class="r">Adj. Win Rate</th><th style="width:120px"></th></tr></thead>
+            <tbody>
+          <tr>
+            <td class="bold">Germany</td>
+            <td class="r">114</td>
+            <td class="r">54</td>
+            <td class="r">168</td>
+            <td class="r" style="font-weight:700;color:#219653;">67.3%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:67%;background:#219653;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">DACH other</td>
+            <td class="r">6</td>
+            <td class="r">4</td>
+            <td class="r">10</td>
+            <td class="r" style="font-weight:700;color:#005047;">59.3%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:59%;background:#005047;"></div></div></td>
+          </tr>
+          <tr>
+            <td class="bold">Rest</td>
+            <td class="r">29</td>
+            <td class="r">36</td>
+            <td class="r">65</td>
+            <td class="r" style="font-weight:700;color:#FFA70B;">46.5%</td>
+            <td><div class="bar-bg"><div class="bar-fill" style="width:46%;background:#FFA70B;"></div></div></td>
+          </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+
+    </main>
+  </div>
+</body>
+</html>

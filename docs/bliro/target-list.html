@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Target List - Bliro ICP Analysis</title>
+  <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #111827;
+  line-height: 1.6;
+}
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 240px;
+  background: #005047;
+  color: #fff;
+  flex-shrink: 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  z-index: 10;
+}
+.sidebar-brand {
+  padding: 24px 20px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+.sidebar-brand .eyebrow {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: rgba(255,255,255,0.5);
+}
+.sidebar-brand h2 {
+  font-size: 16px; font-weight: 700; margin: 6px 0 0; color: #fff;
+}
+.sidebar-brand .sub {
+  font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; padding-bottom: 16px;
+}
+.sidebar-nav { padding: 12px 0; }
+.sidebar-nav a {
+  display: block;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+}
+.sidebar-nav a:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+.sidebar-nav a.active {
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+  border-left-color: #34d399;
+  font-weight: 600;
+}
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+}
+.sidebar-footer a {
+  font-size: 11px; color: rgba(255,255,255,0.5);
+  text-decoration: none;
+}
+.sidebar-footer a:hover { color: rgba(255,255,255,0.8); }
+
+.main {
+  margin-left: 240px;
+  flex: 1;
+  padding: 32px 40px;
+  max-width: 900px;
+}
+.page-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.page-header h1 {
+  font-size: 24px; font-weight: 700; color: #111827;
+}
+.page-header .sub {
+  font-size: 13px; color: #6b7280; margin-top: 4px;
+}
+
+/* Cards */
+.cards { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+.card {
+  flex: 1;
+  min-width: 140px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+.card .value { font-size: 28px; font-weight: 700; }
+.card .label {
+  font-size: 10px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px;
+}
+.card.green .value { color: #005047; }
+.card.red .value { color: #D34053; }
+.card.rev .value { color: #219653; }
+
+/* Section */
+.section {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.section-header {
+  padding: 20px 24px 8px;
+}
+.section-header h2 {
+  font-size: 16px; font-weight: 700; color: #111827;
+}
+.section-header .sub {
+  font-size: 12px; color: #6b7280; margin-top: 2px;
+}
+.section-body { padding: 8px 24px 24px; }
+
+/* Tables */
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.data th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 12px;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f9fafb;
+}
+table.data th.r { text-align: right; }
+table.data td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+}
+table.data td.r {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+table.data td.bold { font-weight: 600; }
+table.data td.green { color: #219653; font-weight: 600; }
+table.data td.red { color: #D34053; font-weight: 600; }
+table.data td.blue { color: #1d4ed8; font-weight: 600; }
+table.data td.muted { color: #6b7280; }
+table.data td.name { font-weight: 600; color: #111827; }
+table.data td.name .domain { font-weight: 400; font-size: 11px; color: #6b7280; }
+table.data tr:last-child td { border-bottom: none; }
+table.data tr.footer-row td {
+  background: #f9fafb; font-size: 12px; color: #6b7280; padding: 10px 12px;
+}
+
+/* Bars */
+.bar-bg {
+  background: #e5e7eb; border-radius: 3px; height: 8px; overflow: hidden;
+}
+.bar-fill {
+  height: 8px; border-radius: 3px; min-width: 2px;
+}
+
+/* Stacked bar chart */
+.stacked-row { display: flex; align-items: center; margin-bottom: 14px; }
+.stacked-label { width: 80px; flex-shrink: 0; }
+.stacked-label .badge {
+  display: inline-block; padding: 3px 10px; border-radius: 12px;
+  font-size: 12px; font-weight: 700; color: #fff;
+}
+.stacked-label .count { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.stacked-bar {
+  flex: 1; display: flex; height: 32px; border-radius: 4px;
+  overflow: hidden; background: #f3f4f6;
+}
+.stacked-seg {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; color: #fff; min-width: 2px;
+}
+.stacked-seg.ws { color: #374151; }
+
+/* Legend */
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #374151; }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+/* ICP box */
+.icp-box {
+  border: 2px solid #005047; border-radius: 8px; overflow: hidden;
+}
+.icp-row {
+  padding: 12px 16px; border-bottom: 1px solid #e5e7eb;
+}
+.icp-row:last-child { border-bottom: none; }
+.icp-row .dim-label {
+  font-size: 11px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.icp-row .tags { margin-top: 6px; }
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 12px; font-weight: 600; color: #005047;
+  background: #ccfbf1; margin: 2px;
+}
+
+/* Methodology */
+.method-box {
+  background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;
+  overflow: hidden;
+}
+.method-step { padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
+.method-step:last-child { border-bottom: none; }
+.method-step h3 {
+  font-size: 13px; font-weight: 700; color: #005047; margin-bottom: 6px;
+}
+.method-step p {
+  font-size: 12px; color: #374151; line-height: 1.7;
+}
+.formula {
+  display: inline-block; padding: 6px 12px; background: #fff;
+  border: 1px solid #d1d5db; border-radius: 4px;
+  font-family: monospace; font-size: 12px; color: #005047;
+  margin: 6px 0;
+}
+.weight-table {
+  width: 100%; border-collapse: collapse; margin-top: 8px;
+  border: 1px solid #e5e7eb; border-radius: 4px; overflow: hidden;
+}
+.weight-table th {
+  padding: 6px 12px; font-size: 11px; font-weight: 600;
+  color: #374151; background: #f3f4f6; text-align: left;
+}
+.weight-table td {
+  padding: 6px 12px; font-size: 12px; color: #374151;
+  border-top: 1px solid #f3f4f6;
+}
+.weight-table td.w {
+  text-align: center; font-weight: 600; color: #005047;
+}
+
+/* Tier badge */
+.tier-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+/* Status badge */
+.status-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 11px; font-weight: 600;
+}
+
+/* Rev cards */
+.rev-cards { display: flex; gap: 0; margin-bottom: 16px; border-radius: 6px; overflow: hidden; border: 1px solid #dcfce7; }
+.rev-card {
+  flex: 1; padding: 16px 8px; background: #f0fdf4; text-align: center;
+  border-right: 1px solid #dcfce7;
+}
+.rev-card:last-child { border-right: none; }
+.rev-card .value { font-size: 20px; font-weight: 700; color: #219653; }
+.rev-card .label { font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 16px; }
+  .cards { flex-direction: column; }
+  .rev-cards { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-brand">
+        <p class="eyebrow">Bliro / DataGen</p>
+        <h2>ICP Analysis</h2>
+        <p class="sub">2026-02-26 | German Mfg. TAM</p>
+      </div>
+      <div class="sidebar-nav">
+        <a href="index.html">Executive Summary</a>
+        <a href="win-rates.html">Win Rates</a>
+        <a href="tier-breakdown.html">Tier Breakdown</a>
+        <a href="customer-value.html">Customer Value</a>
+        <a href="target-list.html" class="active">Target List</a>
+      </div>
+      <div class="sidebar-footer">
+        <a href="https://datagen.dev">Generated by DataGen</a>
+      </div>
+    </nav>
+    <main class="main">
+      <div class="page-header">
+        <h1>Target List</h1>
+        <p class="sub">SDR-ready whitespace companies and pipeline companies with ICP scores</p>
+      </div>
+      <div class="section"><div class="section-header"><h2>Top 50 Tier 1 Whitespace -- SDR Target List</h2><p class="sub">20,748 Core ICP companies not yet in HubSpot</p></div><div class="section-body">
+        <table class="data"><thead><tr><th>Company</th><th class="r">Employees</th><th>Industry</th><th class="r">ICP Score</th></tr></thead><tbody>
+          <tr><td class="name">Bayer Cropscience Deutschland GmbH<div class="domain">bayer.de</div></td><td class="r">49</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">GXP Engaged Group<div class="domain">gxp-auditing.com</div></td><td class="r">49</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Sonnenapotheke<div class="domain">sonne-kressbronn.de</div></td><td class="r">49</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Novo Nordisk Pharma GmbH<div class="domain">dawn-akademie.de</div></td><td class="r">48</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">nova-Institut GmbH<div class="domain">nova-institute.eu</div></td><td class="r">48</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">SAFECHEM<div class="domain">safechem.com</div></td><td class="r">48</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Infrareal Holding GmbH & Co. KG<div class="domain">infrareal.de</div></td><td class="r">47</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">I C H<div class="domain">whatsapp.com</div></td><td class="r">47</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Alte Apotheke<div class="domain">alte-apotheke-schramberg.de</div></td><td class="r">46</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Autocenter<div class="domain">autocenterart.de</div></td><td class="r">46</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Faurecia Clarion<div class="domain">faurecia.de</div></td><td class="r">46</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Ineos Phenol GmbH<div class="domain">ineosphenol-gladbeck.de</div></td><td class="r">46</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Kess Berlin<div class="domain">kessberlin.de</div></td><td class="r">45</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">MEDA Pharma GmbH & Co. KG<div class="domain"></div></td><td class="r">45</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">PharmLog Pharma Logistik GmbH<div class="domain">pharmlog.de</div></td><td class="r">45</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Stadt -Apotheke<div class="domain">stadt-apotheke-laichingen.de</div></td><td class="r">45</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Haering GmbH<div class="domain">haering.de</div></td><td class="r">44</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Silikal®<div class="domain">silikal.com</div></td><td class="r">44</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">coac GmbH<div class="domain">coac.de</div></td><td class="r">43</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Develco Pharma GmbH<div class="domain">develco.de</div></td><td class="r">43</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">HANFF - Global Health Solutions<div class="domain">hanff.lu</div></td><td class="r">43</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Neue Apotheke<div class="domain">neue-apotheke-mahlow.de</div></td><td class="r">42</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Siegfried Hameln<div class="domain">siegfried-hameln.de</div></td><td class="r">42</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Dynamit Nobel Gmbh Explosivstoff- Und Systemtechnik<div class="domain">dynamit-nobel.com</div></td><td class="r">41</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Lyomark Pharma GmbH<div class="domain">lyomark.com</div></td><td class="r">41</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Primo Profile GmbH<div class="domain">primodeutschland.de</div></td><td class="r">41</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">A2 Küchen Center BEG GmbH<div class="domain">a2kuechen.de</div></td><td class="r">40</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">JAS - Joint Analytical Systems GmbH<div class="domain">jas.de</div></td><td class="r">40</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Mecalit<div class="domain">mecalit.de</div></td><td class="r">40</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">MOBILE FUSSPFLEGE<div class="domain">mobile-fusspflege-dadamo.de</div></td><td class="r">40</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">AGRODUR Grosalski GmbH & Co. KG<div class="domain">agrodur.de</div></td><td class="r">39</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Jebagro<div class="domain">jebagro.com</div></td><td class="r">39</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">JACKS beauty line<div class="domain">jacks-beautyline.com</div></td><td class="r">39</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Kunststoffverarbeitung<div class="domain">hoehn-waldbrunn.de</div></td><td class="r">39</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">KAEMMERER<div class="domain">kaemmerer-paper.com</div></td><td class="r">39</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Apotheke am Markt<div class="domain">apotheke-am-markt24.de</div></td><td class="r">38</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Cosphatec GmbH<div class="domain">cosphatec.com</div></td><td class="r">38</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">BurnusCare GmbH<div class="domain">burnuscare.com</div></td><td class="r">38</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Denk Ingredients<div class="domain">denkingredients.de</div></td><td class="r">38</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Einhorn Apotheke<div class="domain">einhorn-apotheke.de</div></td><td class="r">38</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">DR. EMI ARPA SKIN GmbH<div class="domain">dr-emiskin.de</div></td><td class="r">38</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Innotech Marketing und Konfektion Rot GmbH<div class="domain">innotech-rot.de</div></td><td class="r">38</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Kunststofftechnik Paderborn (KTP)<div class="domain">uni-paderborn.de</div></td><td class="r">38</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">KrollCosmetics GmbH<div class="domain">no-cosmetics.de</div></td><td class="r">38</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">SCA HYGIENE PRODUCTS GmbH<div class="domain">zewa.de</div></td><td class="r">38</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">AEROPHARM GmbH<div class="domain">aeropharm.de</div></td><td class="r">37</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Acnos Pharma<div class="domain">acnospharma.com</div></td><td class="r">37</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Bahnhof Apotheke<div class="domain">bahnhof-apotheke-eitorf.de</div></td><td class="r">37</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Composites United<div class="domain">composites-united.com</div></td><td class="r">37</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr><td class="name">Glenwood GmbH<div class="domain">glenwood.de</div></td><td class="r">37</td><td class="muted">Chemical</td><td class="r" style="font-weight:700;color:#219653;">100</td></tr>
+          <tr class="footer-row"><td colspan="4">...and 20,698 more in icp_scored_tam.csv</td></tr>
+        </tbody></table>
+      </div></div>
+
+      <div class="section"><div class="section-header"><h2>Top Matched Companies with Deal Status</h2><p class="sub">ICP-scored companies already in pipeline</p></div><div class="section-body">
+        <table class="data"><thead><tr><th>Company</th><th class="r">Employees</th><th>Tier</th><th class="r">Score</th><th>Deal Status</th></tr></thead><tbody>
+          <tr><td class="name">EMB GmbH<div class="domain">emb-stuhr.de</div></td><td class="r">40</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">Biesterfeld Plastic GmbH<div class="domain">biesterfeld.com</div></td><td class="r">39</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">Azelis Deutschland GmbH<div class="domain"></div></td><td class="r">36</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">CAPHENIA<div class="domain">linktr.ee</div></td><td class="r">32</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#219653;background:#dcfce7;">Won</span></td></tr>
+          <tr><td class="name">FUJIFILM Electronic Materials (Europe) GmbH<div class="domain">fujifilm.com</div></td><td class="r">26</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">SANTIS GmbH<div class="domain">santis.de</div></td><td class="r">24</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">GIVAUDAN DEUTSCHLAND GMBH<div class="domain"></div></td><td class="r">23</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">Rapidobject GmbH<div class="domain">bit.ly</div></td><td class="r">22</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">HARKE Pharma<div class="domain">harke.com</div></td><td class="r">20</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">DURAL GmbH<div class="domain">durapro.de</div></td><td class="r">19</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">Weber Fibertech GmbH<div class="domain">weber-fibertech.eu</div></td><td class="r">19</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">GEKA MbH<div class="domain">geka-munster.de</div></td><td class="r">18</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">GRILLO Zinc Powder GmbH<div class="domain">grillo.de</div></td><td class="r">17</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">HBW-Gubesch<div class="domain">hbw-gubesch.de</div></td><td class="r">16</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">WINKELMANN GmbH<div class="domain">winkelmann.de</div></td><td class="r">16</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">AZETT GmbH & Co. KG<div class="domain">azett.de</div></td><td class="r">15</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">MSW-Chemie GmbH<div class="domain">kpluss.com</div></td><td class="r">14</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">Hübner GmbH<div class="domain">huebner-seckach.de</div></td><td class="r">13</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">Centrotherm SiTec GmbH<div class="domain">centrotherm.de</div></td><td class="r">12</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">POLIFILM CAST<div class="domain">polifilm.com</div></td><td class="r">12</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">INWATEC Industry Services GmbH & Co. KG<div class="domain">inwatec.com</div></td><td class="r">10</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">Koch-Chemie GmbH<div class="domain">koch-chemie.de</div></td><td class="r">10</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">Contura MTC GmbH<div class="domain">contura-mtc.de</div></td><td class="r">9</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+          <tr><td class="name">Bio Pin Naturfarben GmbH & Co. KG<div class="domain">linktr.ee</div></td><td class="r">9</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#219653;background:#dcfce7;">Won</span></td></tr>
+          <tr><td class="name">Weleda AG, Schwäbisch Gmünd<div class="domain">weleda.de</div></td><td class="r">8</td><td><span class="tier-badge" style="background:#219653;">Tier 1</span></td><td class="r" style="font-weight:700;color:#005047;">100</td><td><span class="status-badge" style="color:#1d4ed8;background:#dbeafe;">Active</span></td></tr>
+        </tbody></table>
+      </div></div>
+
+    </main>
+  </div>
+</body>
+</html>

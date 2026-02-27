@@ -1,3 +1,4 @@
 title: DataGen Reports
 description: Hosted reports
 baseurl: /reports
+exclude: []
